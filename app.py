@@ -74,4 +74,75 @@ def email_valid(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
+def hash_password(password):
+    if not password:
+        return None
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
+
+def check_password(password, hashed):
+    if not password or not hashed:
+        return False
+    try:
+        return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+    except (ValueError, AttributeError):
+        return False
+
+#login page route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if user and check_password(password, user['password']):
+            session['user_id'] = user['id']
+            session['email'] = user['email']
+            flash('Login successful!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid email or password', 'error')
+    
+    return render_template('login.html')
+
+#register page route
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        
+        if not is_valid_email(email):
+            flash('Please enter a valid email address', 'error')
+            return render_template('register.html')
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        try:
+            hashed_password = hash_password(password)
+            cursor.execute('INSERT INTO users (email, password) VALUES (?, ?)',
+                     (email, hashed_password))
+            conn.commit()
+            flash('Registration successful! Please login.', 'success')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError:
+            flash('Email already exists', 'error')
+        finally:
+            conn.close()
+    
+    return render_template('register.html')
+
+#logout route
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash("You have been logged out successfully", "info")
+    return redirect(url_for('login'))

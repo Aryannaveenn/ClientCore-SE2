@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="CRM System Dashboard">
+        <title>Dashboard - CRM System</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+        <style>
+            :root {
+                --primary-color: #0056b3;
+                --secondary-color: #6c757d;
+                --success-color: #28a745;
+                --danger-color: #dc3545;
+                --warning-color: #ffc107;
+                --info-color: #17a2b8;
+                --light-color: #f8f9fa;
+                --dark-color: #343a40;
+            }
+    
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background-color: #f8f9fa;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+    
+            .navbar {
+                background-color: var(--primary-color);
+            }
+    
+            .navbar-brand {
+                color: white !important;
+            }
+    
+            .card {
+                border-radius: 0.5rem;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: transform 0.2s ease;
+            }
+    
+            .card:hover {
+                transform: translateY(-2px);
+            }
+    
+            .card-header {
+                background-color: var(--light-color);
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+            }
+    
+            .stat-card {
+                border-left: 4px solid var(--primary-color);
+                min-height: 120px;
+            }
+    
+            .stat-card .card-body {
+                padding: 2rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+    
+            .stat-card .stat-value {
+                font-size: 2.5rem;
+                font-weight: 600;
+                color: var(--primary-color);
+            }
+    
+            .stat-card .stat-label {
+                color: var(--secondary-color);
+                font-size: 0.875rem;
+            }
+    
+            /* Hamburger menu button styles */
+            .menu-button {
+                font-size: 1.75rem;
+                padding: 0.5rem;
+                color: white;
+                background: none;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+            }
+    
+            .menu-button:hover {
+                transform: scale(1.1);
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+    
+            .menu-button:focus {
+                outline: none;
+                box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+            }
+    
+            .menu-button i {
+                transition: transform 0.2s ease;
+            }
+    
+            .menu-button:hover i {
+                transform: rotate(90deg);
+            }
+    
+            /* Footer */
+            .footer {
+                margin-top: auto;
+                background-color: var(--light-color);
+                padding: 1rem 0;
+                border-top: 1px solid rgba(0,0,0,0.1);
+            }
+    
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url_for('index') }}">CRM System</a>
+                <div class="dropdown">
+                    <button class="menu-button" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="{{ url_for('customers') }}"><i class="bi bi-people me-2"></i>Customers</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('lists') }}"><i class="bi bi-list-ul me-2"></i>Lists</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    
+        <div class="container py-4">
+            <h1 class="mb-4">Dashboard</h1>
+    
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card card position-relative">
+                        <a href="{{ url_for('customers') }}" class="stretched-link text-decoration-none">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="stat-label">Total Customers</div>
+                                    <div class="stat-value">{{ stats.total_customers }}</div>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="{{ url_for('add_customer') }}" class="position-absolute top-0 end-0 m-2 btn btn-sm btn-outline-primary" style="z-index: 1;">
+                            <i class="bi bi-plus-lg"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card card position-relative">
+                        <a href="{{ url_for('lists') }}" class="stretched-link text-decoration-none">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="stat-label">Customer Lists</div>
+                                    <div class="stat-value">{{ stats.total_lists }}</div>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="{{ url_for('add_list') }}" class="position-absolute top-0 end-0 m-2 btn btn-sm btn-outline-primary" style="z-index: 1;"> 
+                            <i class="bi bi-plus-lg"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card card position-relative">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="stat-label">Total Interactions</div>
+                                    <div class="stat-value">{{ stats.total_interactions }}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Recent Customers</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_customers %}
+                            <div class="list-group">
+                                {% for customer in recent_customers %}
+                                <a href="{{ url_for('view_customer', customer_id=customer.id) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ customer.name }}</h6>
+                                        <small class="text-muted">{{ customer.created_at }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ customer.email }}</p>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No recent customers.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Recent Interactions</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_interactions %}
+                            <div class="list-group">
+                                {% for interaction in recent_interactions %}
+                                <a href="{{ url_for('view_customer', customer_id=interaction.customer_id) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ interaction.customer_name }}</h6>
+                                        <small class="text-muted">{{ interaction.date }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ interaction.notes }}</p>
+                                    <small class="text-muted">Type: {{ interaction.interaction_type }}</small>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No recent interactions.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <footer class="footer">
+            <div class="footer-content text-center">
+                <span class="text-muted">© 2024 CRM System. All rights reserved.</span>
+            </div>
+        </footer>
+    
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+    </html> 
