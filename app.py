@@ -146,3 +146,123 @@ def logout():
     session.clear()
     flash("You have been logged out successfully", "info")
     return redirect(url_for('login'))
+
+
+@app.route('/')
+def index():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Get statistics
+    cursor.execute('SELECT COUNT(*) as total FROM customers')
+    total_customers = cursor.fetchone()['total']
+    
+    cursor.execute('SELECT COUNT(*) as total FROM customer_lists WHERE user_id = ?', (session['user_id'],))
+    total_lists = cursor.fetchone()['total']
+    
+    cursor.execute('SELECT COUNT(*) as total FROM tasks WHERE user_id = ? AND status != "Completed"', (session['user_id'],))
+    active_tasks = cursor.fetchone()['total']
+    
+    cursor.execute('SELECT COUNT(*) as total FROM interactions WHERE user_id = ?', (session['user_id'],))
+    total_interactions = cursor.fetchone()['total']
+    
+    # Get recent customers
+    cursor.execute('SELECT * FROM customers ORDER BY created_at DESC LIMIT 5')
+    recent_customers = cursor.fetchall()
+    
+    # Get recent interactions
+    cursor.execute('''SELECT interactions.*, customers.name as customer_name 
+                 FROM interactions 
+                 JOIN customers ON interactions.customer_id = customers.id 
+                 WHERE interactions.user_id = ? 
+                 ORDER BY interactions.created_at DESC LIMIT 5''', (session['user_id'],))
+    recent_interactions = cursor.fetchall()
+    
+    conn.close()
+    
+    stats = {
+        'total_customers': total_customers,
+        'total_lists': total_lists,
+        'active_tasks': active_tasks,
+        'total_interactions': total_interactions
+    }
+    
+    return render_template('index.html', 
+                         stats=stats,
+                         recent_customers=recent_customers,
+                         recent_interactions=recent_interactions)
+
+
+
+@app.route('/customers')
+def customers():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM customers ORDER BY name')
+    customers = cursor.fetchall()
+    conn.close()
+    
+    return render_template('customers.html', customers=customers)
+
+
+@app.route('/customer/add', methods=['GET', 'POST'])
+def add_customer():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        phone = request.form['phone']
+        address = request.form['address']
+        gender = request.form['gender']
+        
+        if email and not is_valid_email(email):
+            flash('Please enter a valid email address', 'error')
+            return render_template('add_customer.html')
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO customers (name, email, phone, address, gender) VALUES (?, ?, ?, ?, ?)',
+                 (name, email, phone, address, gender))
+        conn.commit()
+        conn.close()
+        
+        flash('Customer added successfully!', 'success')
+        return redirect(url_for('customers'))
+    
+    return render_template('add_customer.html')
+
+@app.route('/customer/<int:customer_id>')
+def view_customer(customer_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Get customer details
+    cursor.execute('SELECT * FROM customers WHERE id = ?', (customer_id,))
+    customer = cursor.fetchone()
+    
+    # Get customer interactions
+    cursor.execute('''SELECT * FROM interactions 
+                 WHERE customer_id = ? 
+                 ORDER BY created_at DESC''', (customer_id,))
+    interactions = cursor.fetchall()
+    
+    conn.close()
+    
+    if not customer:
+        flash('Customer not found', 'error')
+        return redirect(url_for('customers'))
+    
+    return render_template('view_customer.html', 
+                         customer=customer,
+                         interactions=interactions)
