@@ -266,3 +266,42 @@ def view_customer(customer_id):
     return render_template('view_customer.html', 
                          customer=customer,
                          interactions=interactions)
+
+                         
+@app.route('/customer/<int:customer_id>/add_interaction', methods=['POST'])
+def add_interaction(customer_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    interaction_type = request.form['interaction_type']
+    notes = request.form['notes']
+    reminder_date = request.form.get('reminder_date')
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''INSERT INTO interactions 
+                 (customer_id, user_id, interaction_type, notes, reminder_date) 
+                 VALUES (?, ?, ?, ?, ?)''',
+             (customer_id, session['user_id'], interaction_type, notes, reminder_date))
+    conn.commit()
+    conn.close()
+    
+    flash('Interaction added successfully!', 'success')
+    return redirect(url_for('view_customer', customer_id=customer_id))
+
+@app.route('/customer/<int:customer_id>/update_status', methods=['POST'])
+def update_customer_status(customer_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    status = request.form['status']
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE customers SET status = ? WHERE id = ?',
+             (status, customer_id))
+    conn.commit()
+    conn.close()
+    
+    flash('Customer status updated successfully!', 'success')
+    return redirect(url_for('view_customer', customer_id=customer_id))
