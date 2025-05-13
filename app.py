@@ -305,3 +305,96 @@ def update_customer_status(customer_id):
     
     flash('Customer status updated successfully!', 'success')
     return redirect(url_for('view_customer', customer_id=customer_id))
+
+
+@app.route('/lists')
+def lists():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Get user's lists
+    cursor.execute('SELECT * FROM customer_lists WHERE user_id = ?', (session['user_id'],))
+    lists = cursor.fetchall()
+    conn.close()
+    
+    return render_template('lists.html', lists=lists)
+
+@app.route('/list/add', methods=['GET', 'POST'])
+def add_list():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        name = request.form['name']
+        customer_ids = request.form.getlist('customers')
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Create new list
+        cursor.execute('INSERT INTO customer_lists (name, user_id) VALUES (?, ?)',
+                 (name, session['user_id']))
+        list_id = cursor.lastrowid
+        
+        # Add customers to list
+        for customer_id in customer_ids:
+            cursor.execute('INSERT INTO list_customers (list_id, customer_id) VALUES (?, ?)',
+                     (list_id, customer_id))
+        
+        conn.commit()
+        conn.close()
+        
+        flash('List created successfully!', 'success')
+        return redirect(url_for('lists'))
+    
+    # Get all customers for the form
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM customers ORDER BY name')
+    customers = cursor.fetchall()
+    conn.close()
+    
+    return render_template('add_list.html', customers=customers)
+
+@app.route('/list/<int:list_id>')
+def view_list(list_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Get list details
+    cursor.execute('SELECT * FROM customer_lists WHERE id = ? AND user_id = ?', 
+                  (list_id, session['user_id']))
+    list_data = cursor.fetchone()
+    
+    if not list_data:
+        flash('List not found or unauthorized', 'error')
+        return redirect(url_for('lists'))
+    
+    # Get customers in this list
+    cursor.execute('''SELECT c.* FROM customers c
+                 JOIN list_customers lc ON c.id = lc.customer_id
+                 WHERE lc.list_id = ?
+                 ORDER BY c.name''', (list_id,))
+    customers = cursor.fetchall()
+    
+    # Get available customers (not in the list)
+    cursor.execute('''SELECT c.* FROM customers c
+                 WHERE c.id NOT IN (
+                     SELECT customer_id FROM list_customers WHERE list_id = ?
+                 )
+                 ORDER BY c.name''', (list_id,))
+    available_customers = cursor.fetchall()
+    
+    conn.close()
+    
+    return render_template('view_list.html', 
+                         list_id=list_id,
+                         list_name=list_data['name'],
+                         customers=customers,
+                         available_customers=available_customers)
