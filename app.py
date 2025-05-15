@@ -398,3 +398,66 @@ def view_list(list_id):
                          list_name=list_data['name'],
                          customers=customers,
                          available_customers=available_customers)
+
+@app.route('/list/<int:list_id>/add_customers', methods=['POST'])
+def add_customers_to_list(list_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    customer_ids = request.form.getlist('customer_ids')
+    if not customer_ids:
+        flash('Please select at least one customer to add', 'error')
+        return redirect(url_for('view_list', list_id=list_id))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify list ownership
+    cursor.execute('SELECT id FROM customer_lists WHERE id = ? AND user_id = ?',
+                  (list_id, session['user_id']))
+    if not cursor.fetchone():
+        flash('List not found or unauthorized', 'error')
+        return redirect(url_for('lists'))
+    
+    # Add customers to list
+    for customer_id in customer_ids:
+        try:
+            cursor.execute('INSERT INTO list_customers (list_id, customer_id) VALUES (?, ?)',
+                         (list_id, customer_id))
+        except sqlite3.IntegrityError:
+            # Customer already in list, skip
+            continue
+    
+    conn.commit()
+    conn.close()
+    
+    flash('Customers added to list successfully!', 'success')
+    return redirect(url_for('view_list', list_id=list_id))
+
+@app.route('/list/<int:list_id>/remove_customer/<int:customer_id>', methods=['POST'])
+def remove_customer_from_list(list_id, customer_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify list ownership
+    cursor.execute('SELECT id FROM customer_lists WHERE id = ? AND user_id = ?',
+                  (list_id, session['user_id']))
+    if not cursor.fetchone():
+        flash('List not found or unauthorized', 'error')
+        return redirect(url_for('lists'))
+    
+    # Remove customer from list
+    cursor.execute('DELETE FROM list_customers WHERE list_id = ? AND customer_id = ?',
+                  (list_id, customer_id))
+    
+    if cursor.rowcount > 0:
+        conn.commit()
+        flash('Customer removed from list successfully!', 'success')
+    else:
+        flash('Customer not found in list', 'error')
+    
+    conn.close()
+    return redirect(url_for('view_list', list_id=list_id))
