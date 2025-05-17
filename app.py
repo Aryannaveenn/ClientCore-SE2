@@ -461,3 +461,109 @@ def remove_customer_from_list(list_id, customer_id):
     
     conn.close()
     return redirect(url_for('view_list', list_id=list_id))
+
+
+@app.route('/customer/<int:customer_id>/interaction/<int:interaction_id>/delete', methods=['POST'])
+def delete_interaction(customer_id, interaction_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify the interaction belongs to the user
+    cursor.execute('''
+        SELECT i.id FROM interactions i
+        WHERE i.id = ? AND i.user_id = ?
+    ''', (interaction_id, session['user_id']))
+    
+    interaction = cursor.fetchone()
+    
+    if interaction:
+        cursor.execute('DELETE FROM interactions WHERE id = ?', (interaction_id,))
+        conn.commit()
+        flash('Interaction deleted successfully', 'success')
+    else:
+        flash('Interaction not found or unauthorized', 'error')
+    
+    conn.close()
+    return redirect(url_for('view_customer', customer_id=customer_id))
+
+@app.route('/customer/<int:customer_id>/edit', methods=['GET', 'POST'])
+def edit_customer(customer_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        phone = request.form['phone']
+        address = request.form['address']
+        gender = request.form['gender']
+        
+        if email and not is_valid_email(email):
+            flash('Please enter a valid email address', 'error')
+            return redirect(url_for('edit_customer', customer_id=customer_id))
+        
+        cursor.execute('''UPDATE customers 
+                     SET name = ?, email = ?, phone = ?, address = ?, gender = ?
+                     WHERE id = ?''',
+                     (name, email, phone, address, gender, customer_id))
+        conn.commit()
+        conn.close()
+        
+        flash('Customer updated successfully!', 'success')
+        return redirect(url_for('view_customer', customer_id=customer_id))
+    
+    # GET request - fetch customer details
+    cursor.execute('SELECT * FROM customers WHERE id = ?', (customer_id,))
+    customer = cursor.fetchone()
+    conn.close()
+    
+    if not customer:
+        flash('Customer not found', 'error')
+        return redirect(url_for('customers'))
+    
+    return render_template('edit_customer.html', customer=customer)
+
+@app.route('/customer/<int:customer_id>/interaction/<int:interaction_id>/edit', methods=['GET', 'POST'])
+def edit_interaction(customer_id, interaction_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    if request.method == 'POST':
+        interaction_type = request.form['interaction_type']
+        notes = request.form['notes']
+        reminder_date = request.form.get('reminder_date')
+        
+        cursor.execute('''UPDATE interactions 
+                     SET interaction_type = ?, notes = ?, reminder_date = ?
+                     WHERE id = ? AND user_id = ? AND customer_id = ?''',
+                     (interaction_type, notes, reminder_date, 
+                      interaction_id, session['user_id'], customer_id))
+        conn.commit()
+        conn.close()
+        
+        flash('Interaction updated successfully!', 'success')
+        return redirect(url_for('view_customer', customer_id=customer_id))
+    
+    # GET request - fetch interaction details
+    cursor.execute('''SELECT * FROM interactions 
+                 WHERE id = ? AND user_id = ? AND customer_id = ?''',
+                 (interaction_id, session['user_id'], customer_id))
+    interaction = cursor.fetchone()
+    conn.close()
+    
+    if not interaction:
+        flash('Interaction not found or unauthorized', 'error')
+        return redirect(url_for('view_customer', customer_id=customer_id))
+    
+    return render_template('edit_interaction.html', 
+                         customer_id=customer_id,
+                         interaction=interaction)
