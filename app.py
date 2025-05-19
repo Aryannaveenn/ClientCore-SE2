@@ -567,3 +567,27 @@ def edit_interaction(customer_id, interaction_id):
     return render_template('edit_interaction.html', 
                          customer_id=customer_id,
                          interaction=interaction)
+
+
+@app.route('/customer/<int:customer_id>/delete', methods=['POST'])
+def delete_customer(customer_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # First, delete all interactions for this customer
+    cursor.execute('DELETE FROM interactions WHERE customer_id = ?', (customer_id,))
+    
+    # Then delete the customer
+    cursor.execute('DELETE FROM customers WHERE id = ?', (customer_id,))
+    
+    if cursor.rowcount > 0:
+        conn.commit()
+        flash('Customer deleted successfully!', 'success')
+    else:
+        flash('Customer not found', 'error')
+    
+    conn.close()
+    return redirect(url_for('customers'))
