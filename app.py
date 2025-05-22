@@ -591,3 +591,104 @@ def delete_customer(customer_id):
     
     conn.close()
     return redirect(url_for('customers'))
+
+
+@app.route('/tasks')
+def tasks():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Get tasks grouped by status
+    cursor.execute('''SELECT * FROM tasks 
+                 WHERE user_id = ? 
+                 ORDER BY 
+                     CASE status 
+                         WHEN 'Pending' THEN 1 
+                         WHEN 'In Progress' THEN 2 
+                         WHEN 'Completed' THEN 3 
+                     END,
+                     due_date''', (session['user_id'],))
+    tasks = cursor.fetchall()
+    
+    # Group tasks by status
+    tasks_by_status = {
+        'Pending': [],
+        'In Progress': [],
+        'Completed': []
+    }
+    
+    for task in tasks:
+        tasks_by_status[task['status']].append(task)
+    
+    conn.close()
+    
+    return render_template('tasks.html', tasks_by_status=tasks_by_status)
+
+
+@app.route('/task/add', methods=['GET', 'POST'])
+def add_task():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        title = request.form['title']
+        description = request.form['description']
+        due_date = request.form['due_date']
+        priority = request.form['priority']
+        status = request.form['status']
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute('''INSERT INTO tasks 
+                     (title, description, due_date, priority, status, user_id) 
+                     VALUES (?, ?, ?, ?, ?, ?)''',
+                 (title, description, due_date, priority, status, session['user_id']))
+        conn.commit()
+        conn.close()
+        
+        flash('Task added successfully!', 'success')
+        return redirect(url_for('tasks'))
+    
+    return render_template('add_task.html')
+
+@app.route('/task/<int:task_id>/edit', methods=['GET', 'POST'])
+def edit_task(task_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    if request.method == 'POST':
+        title = request.form['title']
+        description = request.form['description']
+        due_date = request.form['due_date']
+        priority = request.form['priority']
+        status = request.form['status']
+        
+        cursor.execute('''UPDATE tasks 
+                     SET title = ?, description = ?, due_date = ?, 
+                         priority = ?, status = ?
+                     WHERE id = ? AND user_id = ?''',
+                     (title, description, due_date, priority, status, 
+                      task_id, session['user_id']))
+        conn.commit()
+        conn.close()
+        
+        flash('Task updated successfully!', 'success')
+        return redirect(url_for('tasks'))
+    
+    # GET request - fetch task details
+    cursor.execute('SELECT * FROM tasks WHERE id = ? AND user_id = ?', 
+                  (task_id, session['user_id']))
+    task = cursor.fetchone()
+    conn.close()
+    
+    if not task:
+        flash('Task not found or unauthorized', 'error')
+        return redirect(url_for('tasks'))
+    
+    return render_template('edit_task.html', task=task)
