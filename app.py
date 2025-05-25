@@ -692,3 +692,58 @@ def edit_task(task_id):
         return redirect(url_for('tasks'))
     
     return render_template('edit_task.html', task=task)
+
+@app.route('/task/<int:task_id>/delete', methods=['POST'])
+def delete_task(task_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('DELETE FROM tasks WHERE id = ? AND user_id = ?', 
+                  (task_id, session['user_id']))
+    
+    if cursor.rowcount > 0:
+        conn.commit()
+        flash('Task deleted successfully!', 'success')
+    else:
+        flash('Task not found or unauthorized', 'error')
+    
+    conn.close()
+    return redirect(url_for('tasks'))
+
+
+@app.route('/list/<int:list_id>/delete', methods=['POST'])
+def delete_list(list_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify list ownership
+    cursor.execute('SELECT id FROM customer_lists WHERE id = ? AND user_id = ?',
+                  (list_id, session['user_id']))
+    if not cursor.fetchone():
+        flash('List not found or unauthorized', 'error')
+        return redirect(url_for('lists'))
+    
+    # First, delete all list_customers entries
+    cursor.execute('DELETE FROM list_customers WHERE list_id = ?', (list_id,))
+    
+    # Then delete the list
+    cursor.execute('DELETE FROM customer_lists WHERE id = ?', (list_id,))
+    
+    if cursor.rowcount > 0:
+        conn.commit()
+        flash('List deleted successfully!', 'success')
+    else:
+        flash('List not found', 'error')
+    
+    conn.close()
+    return redirect(url_for('lists'))
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
