@@ -132,12 +132,17 @@ def login():
 def register():
     if request.method == 'POST':
         email = request.form['email']
-        password = request.form['password']     
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']   
 
         if email and not is_valid_email(email):
             flash('Please enter a valid email address', 'error')
             return render_template('register.html')
-
+        if password != confirm_password:
+            flash('Passwords do not match!')
+            return render_template('register.html')
+        
+        
         conn = get_db()
         cursor = conn.cursor()
         
