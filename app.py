@@ -89,6 +89,20 @@ def is_valid_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
+def validate_password(password):
+    requirements = {
+        'length': len(password) >= 8,
+        'uppercase': any(c.isupper() for c in password),
+        'lowercase': any(c.islower() for c in password),
+        'number': any(c.isdigit() for c in password),
+        'special': any(not c.isalnum() for c in password)
+    }
+    
+    if not all(requirements.values()):
+        missing = [req for req, met in requirements.items() if not met]
+        return False, missing
+    return True, []
+
 def hash_password(password):
     if not password:
         return None
@@ -138,10 +152,23 @@ def register():
         if email and not is_valid_email(email):
             flash('Please enter a valid email address', 'error')
             return render_template('register.html')
+            
         if password != confirm_password:
-            flash('Passwords do not match!')
+            flash('Passwords do not match!', 'error')
             return render_template('register.html')
-        
+            
+        is_valid, missing_requirements = validate_password(password)
+        if not is_valid:
+            requirements_text = {
+                'length': 'at least 8 characters',
+                'uppercase': 'one uppercase letter',
+                'lowercase': 'one lowercase letter',
+                'number': 'one number',
+                'special': 'one special character'
+            }
+            missing_text = [requirements_text[req] for req in missing_requirements]
+            flash(f'Password must contain: {", ".join(missing_text)}', 'error')
+            return render_template('register.html')
         
         conn = get_db()
         cursor = conn.cursor()
