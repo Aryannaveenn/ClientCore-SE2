@@ -153,6 +153,26 @@
             </a>
         </div>
 
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('customers') }}" class="row g-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" placeholder="Search customers by name, email, or phone..." value="{{ search_query }}">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                            {% if search_query %}
+                            <a href="{{ url_for('customers') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">

@@ -249,13 +249,25 @@ def customers():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
+    search_query = request.args.get('search', '').strip()
+    
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM customers ORDER BY name')
+    
+    if search_query:
+        # Search in name, email, and phone fields
+        cursor.execute('''
+            SELECT * FROM customers 
+            WHERE name LIKE ? OR email LIKE ? OR phone LIKE ?
+            ORDER BY name
+        ''', (f'%{search_query}%', f'%{search_query}%', f'%{search_query}%'))
+    else:
+        cursor.execute('SELECT * FROM customers ORDER BY name')
+    
     customers = cursor.fetchall()
     conn.close()
     
-    return render_template('customers.html', customers=customers)
+    return render_template('customers.html', customers=customers, search_query=search_query)
 
 
 @app.route('/customer/add', methods=['GET', 'POST'])
