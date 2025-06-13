@@ -73,6 +73,14 @@ def init_db():
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                   FOREIGN KEY (user_id) REFERENCES users (id))''')
     
+    # Create task_customers table (many-to-many relationship)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS task_customers
+                 (task_id INTEGER,
+                  customer_id INTEGER,
+                  PRIMARY KEY (task_id, customer_id),
+                  FOREIGN KEY (task_id) REFERENCES tasks (id),
+                  FOREIGN KEY (customer_id) REFERENCES customers (id))''')
+    
     conn.commit()
     conn.close()
 
@@ -660,16 +668,22 @@ def tasks():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Get tasks grouped by status
-    cursor.execute('''SELECT * FROM tasks 
-                 WHERE user_id = ? 
-                 ORDER BY 
-                     CASE status 
-                         WHEN 'Pending' THEN 1 
-                         WHEN 'In Progress' THEN 2 
-                         WHEN 'Completed' THEN 3 
-                     END,
-                     due_date''', (session['user_id'],))
+    # Get tasks grouped by status with customer information
+    cursor.execute('''
+        SELECT t.*, GROUP_CONCAT(c.name) as customer_names
+        FROM tasks t
+        LEFT JOIN task_customers tc ON t.id = tc.task_id
+        LEFT JOIN customers c ON tc.customer_id = c.id
+        WHERE t.user_id = ?
+        GROUP BY t.id
+        ORDER BY 
+            CASE t.status 
+                WHEN 'Pending' THEN 1 
+                WHEN 'In Progress' THEN 2 
+                WHEN 'Completed' THEN 3 
+            END,
+            t.due_date
+    ''', (session['user_id'],))
     tasks = cursor.fetchall()
     
     # Group tasks by status
@@ -680,6 +694,10 @@ def tasks():
     }
     
     for task in tasks:
+        # Convert customer_names from string to list
+        if task['customer_names']:
+            task = dict(task)
+            task['customer_names'] = task['customer_names'].split(',')
         tasks_by_status[task['status']].append(task)
     
     conn.close()
@@ -692,26 +710,41 @@ def add_task():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
+    conn = get_db()
+    cursor = conn.cursor()
+    
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
         due_date = request.form['due_date']
         priority = request.form['priority']
         status = request.form['status']
+        selected_customers = request.form.getlist('customers')
         
-        conn = get_db()
-        cursor = conn.cursor()
         cursor.execute('''INSERT INTO tasks 
                      (title, description, due_date, priority, status, user_id) 
                      VALUES (?, ?, ?, ?, ?, ?)''',
                  (title, description, due_date, priority, status, session['user_id']))
+        
+        task_id = cursor.lastrowid
+        
+        # Add selected customers to the task
+        for customer_id in selected_customers:
+            cursor.execute('INSERT INTO task_customers (task_id, customer_id) VALUES (?, ?)',
+                         (task_id, customer_id))
+        
         conn.commit()
         conn.close()
         
         flash('Task added successfully!', 'success')
         return redirect(url_for('tasks'))
     
-    return render_template('add_task.html')
+    # GET request - fetch all customers for selection
+    cursor.execute('SELECT * FROM customers ORDER BY name')
+    customers = cursor.fetchall()
+    conn.close()
+    
+    return render_template('add_task.html', customers=customers)
 
 @app.route('/task/<int:task_id>/edit', methods=['GET', 'POST'])
 def edit_task(task_id):
@@ -727,6 +760,7 @@ def edit_task(task_id):
         due_date = request.form['due_date']
         priority = request.form['priority']
         status = request.form['status']
+        selected_customers = request.form.getlist('customers')
         
         cursor.execute('''UPDATE tasks 
                      SET title = ?, description = ?, due_date = ?, 
@@ -734,23 +768,43 @@ def edit_task(task_id):
                      WHERE id = ? AND user_id = ?''',
                      (title, description, due_date, priority, status, 
                       task_id, session['user_id']))
+        
+        # Update task-customer relationships
+        cursor.execute('DELETE FROM task_customers WHERE task_id = ?', (task_id,))
+        for customer_id in selected_customers:
+            cursor.execute('INSERT INTO task_customers (task_id, customer_id) VALUES (?, ?)',
+                         (task_id, customer_id))
+        
         conn.commit()
         conn.close()
         
         flash('Task updated successfully!', 'success')
         return redirect(url_for('tasks'))
     
-    # GET request - fetch task details
+    # GET request - fetch task details and customers
     cursor.execute('SELECT * FROM tasks WHERE id = ? AND user_id = ?', 
                   (task_id, session['user_id']))
     task = cursor.fetchone()
-    conn.close()
     
     if not task:
+        conn.close()
         flash('Task not found or unauthorized', 'error')
         return redirect(url_for('tasks'))
     
-    return render_template('edit_task.html', task=task)
+    # Get all customers
+    cursor.execute('SELECT * FROM customers ORDER BY name')
+    customers = cursor.fetchall()
+    
+    # Get attached customer IDs
+    cursor.execute('SELECT customer_id FROM task_customers WHERE task_id = ?', (task_id,))
+    attached_customer_ids = [row['customer_id'] for row in cursor.fetchall()]
+    
+    conn.close()
+    
+    return render_template('edit_task.html', 
+                         task=task,
+                         customers=customers,
+                         attached_customer_ids=attached_customer_ids)
 
 @app.route('/task/<int:task_id>/delete', methods=['POST'])
 def delete_task(task_id):
@@ -772,6 +826,27 @@ def delete_task(task_id):
     conn.close()
     return redirect(url_for('tasks'))
 
+@app.route('/task/<int:task_id>/complete', methods=['POST'])
+def complete_task(task_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('''UPDATE tasks 
+                     SET status = 'Completed'
+                     WHERE id = ? AND user_id = ?''',
+                  (task_id, session['user_id']))
+    
+    if cursor.rowcount > 0:
+        conn.commit()
+        flash('Task marked as completed!', 'success')
+    else:
+        flash('Task not found or unauthorized', 'error')
+    
+    conn.close()
+    return redirect(url_for('tasks'))
 
 @app.route('/list/<int:list_id>/delete', methods=['POST'])
 def delete_list(list_id):

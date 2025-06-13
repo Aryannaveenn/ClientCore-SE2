@@ -105,6 +105,34 @@
             margin: 0 auto;
             padding: 0 1rem;
         }
+
+        .customer-selection {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .customer-card {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .customer-card:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .customer-card.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(0, 86, 179, 0.05);
+        }
+        
+        .customer-card.selected .form-check-input {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .cursor-pointer {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -170,9 +198,40 @@
                         <select class="form-select" id="status" name="status" required>
                             <option value="Pending">Pending</option>
                             <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
                         </select>
                         <div class="form-text">Set the current status of the task.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Attached Customers</label>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="customerSearch" placeholder="Search customers...">
+                        </div>
+                        <div class="customer-selection">
+                            {% for customer in customers %}
+                            <div class="customer-card" data-customer-id="{{ customer.id }}" data-customer-name="{{ customer.name|lower }}" data-customer-email="{{ customer.email|lower if customer.email else '' }}">
+                                <input type="checkbox" name="customers" value="{{ customer.id }}" class="d-none" id="customer-{{ customer.id }}">
+                                <label for="customer-{{ customer.id }}" class="card mb-2 cursor-pointer">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="form-check me-2">
+                                                <input class="form-check-input" type="checkbox" disabled>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ customer.name }}</h6>
+                                                {% if customer.email %}
+                                                <small class="text-muted">{{ customer.email }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="form-text">Click on customers to attach them to this task.</div>
                     </div>
                     <div class="d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary">
@@ -191,5 +250,36 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const customerSearch = document.getElementById('customerSearch');
+            const customerCards = document.querySelectorAll('.customer-card');
+
+            customerSearch.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                customerCards.forEach(card => {
+                    const name = card.dataset.customerName;
+                    const email = card.dataset.customerEmail;
+                    if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+
+            customerCards.forEach(card => {
+                const label = card.querySelector('label');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                const visualCheckbox = card.querySelector('.form-check-input');
+
+                label.addEventListener('click', function() {
+                    checkbox.checked = !checkbox.checked;
+                    label.classList.toggle('selected');
+                    visualCheckbox.checked = checkbox.checked;
+                });
+            });
+        });
+    </script>
 </body>
 </html> 

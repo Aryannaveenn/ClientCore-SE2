@@ -218,10 +218,25 @@
                             <span class="priority-badge priority-{{ task.priority|lower }}">{{ task.priority }}</span>
                             <span class="ms-2">Due: {{ task.due_date }}</span>
                         </div>
+                        {% if task.customer_names %}
+                        <div class="task-customers mt-2">
+                            <small class="text-muted">Attached Customers:</small>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                {% for customer_name in task.customer_names %}
+                                <span class="badge bg-light text-dark">{{ customer_name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="task-actions">
                             <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-sm btn-outline-primary me-2">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <form action="{{ url_for('complete_task', task_id=task.id) }}" method="POST" class="d-inline me-2">
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-check-lg"></i> Complete
+                                </button>
+                            </form>
                             <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ task.id }}">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -264,10 +279,25 @@
                             <span class="priority-badge priority-{{ task.priority|lower }}">{{ task.priority }}</span>
                             <span class="ms-2">Due: {{ task.due_date }}</span>
                         </div>
+                        {% if task.customer_names %}
+                        <div class="task-customers mt-2">
+                            <small class="text-muted">Attached Customers:</small>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                {% for customer_name in task.customer_names %}
+                                <span class="badge bg-light text-dark">{{ customer_name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="task-actions">
                             <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-sm btn-outline-primary me-2">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <form action="{{ url_for('complete_task', task_id=task.id) }}" method="POST" class="d-inline me-2">
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-check-lg"></i> Complete
+                                </button>
+                            </form>
                             <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ task.id }}">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -310,6 +340,16 @@
                             <span class="priority-badge priority-{{ task.priority|lower }}">{{ task.priority }}</span>
                             <span class="ms-2">Due: {{ task.due_date }}</span>
                         </div>
+                        {% if task.customer_names %}
+                        <div class="task-customers mt-2">
+                            <small class="text-muted">Attached Customers:</small>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                {% for customer_name in task.customer_names %}
+                                <span class="badge bg-light text-dark">{{ customer_name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="task-actions">
                             <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-sm btn-outline-primary me-2">
                                 <i class="bi bi-pencil"></i>
