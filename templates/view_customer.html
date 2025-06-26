@@ -145,6 +145,18 @@
     </nav>
 
     <div class="container py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="mb-3">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Customer Details</h1>
             <div>
@@ -198,12 +210,21 @@
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <span>{{ interaction.date }}</span>
                                     <div>
-                                        <a href="{{ url_for('edit_interaction', customer_id=customer.id, interaction_id=interaction.id) }}" class="btn btn-sm btn-warning me-2">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteInteractionModal{{ interaction.id }}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                        {% if interaction.user_id == current_user_id %}
+                                            <a href="{{ url_for('edit_interaction', customer_id=customer.id, interaction_id=interaction.id) }}" class="btn btn-sm btn-warning me-2" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteInteractionModal{{ interaction.id }}" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        {% else %}
+                                            <button type="button" class="btn btn-sm btn-warning me-2" title="You can only edit your own interactions" disabled>
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" title="You can only delete your own interactions" disabled>
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="card-body">

@@ -318,7 +318,7 @@ def view_customer(customer_id):
     cursor.execute('SELECT * FROM customers WHERE id = ?', (customer_id,))
     customer = cursor.fetchone()
     
-    # Get customer interactions
+    # Get customer interactions (include user_id for permission checks)
     cursor.execute('''SELECT * FROM interactions 
                  WHERE customer_id = ? 
                  ORDER BY created_at DESC''', (customer_id,))
@@ -332,7 +332,8 @@ def view_customer(customer_id):
     
     return render_template('view_customer.html', 
                          customer=customer,
-                         interactions=interactions)
+                         interactions=interactions,
+                         current_user_id=session['user_id'])
 
                          
 @app.route('/customer/<int:customer_id>/add_interaction', methods=['POST'])

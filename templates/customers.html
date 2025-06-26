@@ -198,6 +198,9 @@
                                     <a href="{{ url_for('edit_customer', customer_id=customer.id) }}" class="btn btn-sm btn-warning" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    <a href="{{ url_for('view_customer', customer_id=customer.id) }}" class="btn btn-sm btn-info" title="Add Interaction">
+                                        <i class="bi bi-hand-index-thumb"></i>
+                                    </a>
                                     <button type="button" class="btn btn-sm btn-danger" title="Delete" onclick="confirmDelete({{ customer.id }}, '{{ customer.name }}')">
                                         <i class="bi bi-trash"></i>
                                     </button>
