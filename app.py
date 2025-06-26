@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 
-# Database initialization
+#initialise db
 def init_db():
     conn = sqlite3.connect('crm.db')
     cursor = conn.cursor()
@@ -85,7 +85,7 @@ def init_db():
     conn.close()
 
 # Initialize database
-init_db()
+init_db() 
 
 # Helper function to get database connection
 def get_db():
