@@ -18,21 +18,25 @@ This project is a customer relationship management platform called ClientCore, d
 
 2. **Install dependencies:**
     Run the following command in the /CRM directory in your preferred terminal
-
-    - pip install -r requirements.txt 
-    
+    ```
+    pip install -r requirements.txt 
+    ```
 
 3. **Start the local server:**
     ```
-    npm start
+    python app.py
     ```
 
-4. Open your browser and navigate to `http://localhost:3000`.
+4. **Open website on browser**
+
+    Open your browser and navigate to `http://localhost:5000`.
 
 ## Usage
 
-- **Dashboard:** View an overview of your sales pipeline and recent activity.
+- **Dashboard:** View an overview of your sales pipeline and recent customer activity in the home page as soon as you log in.
 - **Contacts:** Add, edit, or remove customer contact information.
+- **Lists** Create, edit or remove customer lists to organise groups of customers.
+- **Tasks** Create tasks and track task progression and complete tasks on time, attach customers to tasks.
 - **Leads:** Track potential customers and their progress through the individual customer profiles which include interactions.
 
 ## License
