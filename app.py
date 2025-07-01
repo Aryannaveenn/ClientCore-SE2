@@ -729,7 +729,7 @@ def add_task():
                      VALUES (?, ?, ?, ?, ?, ?)''',
                  (title, description, due_date, priority, status, session['user_id']))
         
-        task_id = cursor.lastrowid
+        task_id = cursor.lastrowid #get the id of the last inserted task
         
         #add selected customers into the task using customer_id
         for customer_id in selected_customers:
