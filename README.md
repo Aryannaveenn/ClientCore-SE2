@@ -17,6 +17,8 @@ This project is a customer relationship management platform called ClientCore, d
     
 
 2. **Install dependencies:**
+    Navigate to the location of the CRM file
+    
     Run the following command in the /CRM directory in your preferred terminal
     ```
     pip install -r requirements.txt 
