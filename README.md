@@ -12,25 +12,14 @@ This project is a customer relationship management platform called ClientCore, d
     
 2. **Manage File Structure & Directories**
 
-    Ensure that the file structure is as follows:
+    Ensure that the file structure is as follows at the bottom of this Readme file.
 
-    ```
-CRM/
-├── public/             # Static assets
-├── src/
-│   ├── components/     # React components
-│   ├── pages/          # Application pages
-│   ├── services/       # API and business logic
-│   └── App.js          # Main app entry point
-├── package.json        # Project metadata and dependencies
-├── README.md           # Project documentation
-└── LICENSE             # License information
-```
+    
 
 2. **Install dependencies:**
-    Run the following command in /CRM directory
-    
-    pip install -r requirements.txt 
+    Run the following command in the /CRM directory in your preferred terminal
+
+    - pip install -r requirements.txt 
     
 
 3. **Start the local server:**
@@ -50,3 +39,17 @@ CRM/
 
 This project is licensed under the [GNU GENERAL PUBLIC LICENSE](LICENSE).
 
+## Directory Structure
+
+```
+CRM/
+├── public/             # Static assets
+├── src/
+│   ├── components/     # React components
+│   ├── pages/          # Application pages
+│   ├── services/       # API and business logic
+│   └── App.js          # Main app entry point
+├── package.json        # Project metadata and dependencies
+├── README.md           # Project documentation
+└── LICENSE             # License information
+```
