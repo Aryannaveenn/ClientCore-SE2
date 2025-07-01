@@ -14,7 +14,18 @@ This project is a customer relationship management platform called ClientCore, d
 
     Ensure that the file structure is as follows:
 
-    
+    ```
+CRM/
+├── public/             # Static assets
+├── src/
+│   ├── components/     # React components
+│   ├── pages/          # Application pages
+│   ├── services/       # API and business logic
+│   └── App.js          # Main app entry point
+├── package.json        # Project metadata and dependencies
+├── README.md           # Project documentation
+└── LICENSE             # License information
+```
 
 2. **Install dependencies:**
     Run the following command in /CRM directory
@@ -37,19 +48,5 @@ This project is a customer relationship management platform called ClientCore, d
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [GNU GENERAL PUBLIC LICENSE](LICENSE).
 
-## Directory Structure
-
-```
-CRM/
-├── public/             # Static assets
-├── src/
-│   ├── components/     # React components
-│   ├── pages/          # Application pages
-│   ├── services/       # API and business logic
-│   └── App.js          # Main app entry point
-├── package.json        # Project metadata and dependencies
-├── README.md           # Project documentation
-└── LICENSE             # License information
-```
