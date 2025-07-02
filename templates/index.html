@@ -145,11 +145,6 @@
         </div>
     </nav>
 <!-- Flash messages -->
-    {% if session.get('email') %}
-        <div class="alert alert-info text-center mb-0">
-            Welcome back, {{ session.email }}!
-        </div>
-    {% endif %} 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="mb-3">
