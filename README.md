@@ -49,13 +49,23 @@ This project is licensed under the [GNU GENERAL PUBLIC LICENSE](LICENSE).
 
 ```
 CRM/
-├── public/             # Static assets
-├── src/
-│   ├── components/     # React components
-│   ├── pages/          # Application pages
-│   ├── services/       # API and business logic
-│   └── App.js          # Main app entry point
-├── package.json        # Project metadata and dependencies
+├── app.py/             # Main application gateway and Flask backend
+├── templates/              # Application HTML pages, all inside templates folder
+│   ├── add_customer.html/     
+│   ├── add_list.html/         
+│   ├── add_task.html/       
+│   └── customers.html/          
+│   └── edit_customer.html/          
+│   └── edit_interaction.html/          
+│   └── edit_task.html/          
+│   └── index.html/          
+│   └── lists.html/          
+│   └── login.html/          
+│   └── register.html/          
+│   └── tasks.html/          
+│   └── view_customer.html/          
+│   └── view_list.html/                    
+├── requirements.txt        # Project and dependencies
 ├── README.md           # Project documentation
 └── LICENSE             # License information
 ```

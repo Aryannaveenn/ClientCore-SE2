@@ -47,7 +47,6 @@
             box-shadow: 0 0 0 0.2rem rgba(0,86,179,0.25);
         }
 
-        /* Hamburger menu button styles */
         .menu-button {
             font-size: 1.75rem;
             padding: 0.5rem;
@@ -82,7 +81,6 @@
             transform: rotate(90deg);
         }
 
-        /* Footer */
         .footer {
             margin-top: auto;
             background-color: var(--light-color);
@@ -106,7 +104,7 @@
                 <div class="dropdown">
                     <button class="menu-button" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-list"></i>
-                    </button>
+                    </button> <!-- Hamburger menu and buttons -->
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                         <li><a class="dropdown-item" href="{{ url_for('customers') }}"><i class="bi bi-people me-2"></i>Customers</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('lists') }}"><i class="bi bi-list-ul me-2"></i>Lists</a></li>
@@ -118,7 +116,7 @@
             </div>
         </div>
     </nav>
-
+<!-- flash messages-->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="mb-3">
@@ -136,7 +134,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Edit Interaction</h1>
             <a href="{{ url_for('view_customer', customer_id=customer_id) }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left me-2"></i>Back to Customer
+                <i class="bi bi-arrow-left me-2"></i>Back to Customer <!-- back button-->
             </a>
         </div>
 
@@ -148,7 +146,7 @@
                             <div class="mb-3">
                                 <label for="interaction_type" class="form-label">Interaction Type</label>
                                 <select class="form-select" id="interaction_type" name="interaction_type" required>
-                                    <option value="">Select type...</option>
+                                    <option value="">Select type...</option> <!-- preselecting the right interaction type -->
                                     <option value="Call" {% if interaction.interaction_type == 'Call' %}selected{% endif %}>Call</option>
                                     <option value="Email" {% if interaction.interaction_type == 'Email' %}selected{% endif %}>Email</option>
                                     <option value="Meeting" {% if interaction.interaction_type == 'Meeting' %}selected{% endif %}>Meeting</option>
@@ -156,7 +154,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="notes" class="form-label">Notes</label>
+                                <label for="notes" class="form-label">Notes</label> <!-- preselecting the existing interaction notes-->
                                 <textarea class="form-control" id="notes" name="notes" rows="4" required>{{ interaction.notes }}</textarea>
                             </div>
                             <div class="mb-3">
@@ -165,8 +163,8 @@
                                        value="{{ interaction.reminder_date if interaction.reminder_date else '' }}">
                             </div>
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-save me-2"></i>Save Changes
+                                <button type="submit" class="btn btn-primary"> 
+                                    <i class="bi bi-save me-2"></i>Save Changes <!-- save changes button-->
                                 </button>
                             </div>
                         </form>

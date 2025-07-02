@@ -75,7 +75,6 @@
             font-size: 0.875rem;
         }
 
-        /* Hamburger menu button styles */
         .menu-button {
             font-size: 1.75rem;
             padding: 0.5rem;
@@ -110,7 +109,6 @@
             transform: rotate(90deg);
         }
 
-        /* Footer */
         .footer {
             margin-top: auto;
             background-color: var(--light-color);
@@ -131,10 +129,10 @@
             <a class="navbar-brand" href="{{ url_for('index') }}">ClientCore</a>
             <div class="d-flex align-items-center">
                 <span class="text-white me-3">Welcome, {{ session.email }}</span>
-                <div class="dropdown">
+                <div class="dropdown"> <!-- hamburger menu-->
                     <button class="menu-button" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-list"></i>
-                    </button>
+                    </button> <!-- Hamburger menu and buttons in it -->
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                         <li><a class="dropdown-item" href="{{ url_for('customers') }}"><i class="bi bi-people me-2"></i>Customers</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('lists') }}"><i class="bi bi-list-ul me-2"></i>Lists</a></li>
@@ -146,7 +144,12 @@
             </div>
         </div>
     </nav>
-
+<!-- Flash messages -->
+    {% if session.get('email') %}
+        <div class="alert alert-info text-center mb-0">
+            Welcome back, {{ session.email }}!
+        </div>
+    {% endif %} 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="mb-3">
@@ -169,7 +172,7 @@
                     <a href="{{ url_for('customers') }}" class="stretched-link text-decoration-none">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="stat-label">Total Customers</div>
+                                <div class="stat-label">Total Customers</div> <!-- link to customers page and customer statistics card-->
                                 <div class="stat-value">{{ stats.total_customers }}</div>
                             </div>
                         </div>
@@ -184,7 +187,7 @@
                     <a href="{{ url_for('lists') }}" class="stretched-link text-decoration-none">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="stat-label">Customer Lists</div>
+                                <div class="stat-label">Customer Lists</div> <!-- lists card and stats -->
                                 <div class="stat-value">{{ stats.total_lists }}</div>
                             </div>
                         </div>
@@ -199,7 +202,7 @@
                     <a href="{{ url_for('tasks') }}" class="stretched-link text-decoration-none">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="stat-label">Active Tasks</div>
+                                <div class="stat-label">Active Tasks</div> <!-- tasks card and stats -->
                                 <div class="stat-value">{{ stats.active_tasks }}</div>
                             </div>
                         </div>
@@ -215,14 +218,14 @@
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">Recent Customers</h5>
+                        <h5 class="card-title mb-0">Recent Customers</h5> <!-- card for recent customers-->
                     </div>
                     <div class="card-body">
                         {% if recent_customers %}
                         <div class="list-group">
                             {% for customer in recent_customers %}
                             <a href="{{ url_for('view_customer', customer_id=customer.id) }}" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
+                                <div class="d-flex w-100 justify-content-between"> <!-- details of customers-->
                                     <h6 class="mb-1">{{ customer.name }}</h6>
                                     <small class="text-muted">{{ customer.created_at }}</small>
                                 </div>
@@ -231,7 +234,7 @@
                             {% endfor %}
                         </div>
                         {% else %}
-                        <p class="text-muted">No recent customers.</p>
+                        <p class="text-muted">No recent customers.</p> <!-- if new account or no customers added-->
                         {% endif %}
                     </div>
                 </div>
@@ -240,14 +243,14 @@
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">Recent Interactions</h5>
+                        <h5 class="card-title mb-0">Recent Interactions</h5> <!-- recent interactions section-->
                     </div>
                     <div class="card-body">
                         {% if recent_interactions %}
                         <div class="list-group">
                             {% for interaction in recent_interactions %}
                             <a href="{{ url_for('view_customer', customer_id=interaction.customer_id) }}" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
+                                <div class="d-flex w-100 justify-content-between"> <!-- interaction details-->
                                     <h6 class="mb-1">{{ interaction.customer_name }}</h6>
                                     <small class="text-muted">{{ interaction.date }}</small>
                                 </div>
@@ -257,7 +260,7 @@
                             {% endfor %}
                         </div>
                         {% else %}
-                        <p class="text-muted">No recent interactions.</p>
+                        <p class="text-muted">No recent interactions.</p> <!-- if no interactions -->
                         {% endif %}
                     </div>
                 </div>
@@ -265,6 +268,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script> <!-- bootstrap js for icons etc-->
 </body>
 </html>
